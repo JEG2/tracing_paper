@@ -229,9 +229,64 @@ defmodule TracingPaper.Matrix do
     |> new
   end
 
+  def translate(x, y, z) do
+    identity()
+    |> Map.put({3, 0}, x)
+    |> Map.put({3, 1}, y)
+    |> Map.put({3, 2}, z)
+  end
+
+  def scale(x, y, z) do
+    identity()
+    |> Map.put({0, 0}, x)
+    |> Map.put({1, 1}, y)
+    |> Map.put({2, 2}, z)
+  end
+
+  def rotate_x(degrees) do
+    radians = degress_to_radians(degrees)
+    identity()
+    |> Map.put({1, 1}, :math.cos(radians))
+    |> Map.put({2, 1}, -:math.sin(radians))
+    |> Map.put({1, 2}, :math.sin(radians))
+    |> Map.put({2, 2}, :math.cos(radians))
+  end
+
+  def rotate_y(degrees) do
+    radians = degress_to_radians(degrees)
+    identity()
+    |> Map.put({0, 0}, :math.cos(radians))
+    |> Map.put({2, 0}, :math.sin(radians))
+    |> Map.put({0, 2}, -:math.sin(radians))
+    |> Map.put({2, 2}, :math.cos(radians))
+  end
+
+  def rotate_z(degrees) do
+    radians = degress_to_radians(degrees)
+    identity()
+    |> Map.put({0, 0}, :math.cos(radians))
+    |> Map.put({1, 0}, -:math.sin(radians))
+    |> Map.put({0, 1}, :math.sin(radians))
+    |> Map.put({1, 1}, :math.cos(radians))
+  end
+
+  def shear(xy, xz, yx, yz, zx, zy) do
+    identity()
+    |> Map.put({1, 0}, xy)
+    |> Map.put({2, 0}, xz)
+    |> Map.put({0, 1}, yx)
+    |> Map.put({2, 1}, yz)
+    |> Map.put({0, 2}, zx)
+    |> Map.put({1, 2}, zy)
+  end
+
   defp i_to_xy(i) do
     y = div(i, 4)
     x = rem(i, 4)
     {x, y}
+  end
+
+  defp degress_to_radians(degrees) do
+    degrees / 180 * :math.pi
   end
 end

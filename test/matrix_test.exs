@@ -1,7 +1,8 @@
 defmodule MatrixTest do
   use ExUnit.Case, async: true
+  import TracingPaper.Assertions
 
-  alias TracingPaper.Matrix
+  alias TracingPaper.{Matrix, Point, Vector}
 
   test "matrix creation and indexing" do
     matrix = Matrix.new(
@@ -185,7 +186,7 @@ defmodule MatrixTest do
     product         = Matrix.multiply(matrix1, matrix2)
     inverse         = Matrix.inverse(matrix2)
     inverse_product = Matrix.multiply(product, inverse)
-    assert_close_to inverse_product, matrix1
+    assert_close_to_matrix inverse_product, matrix1
   end
 
   test "illegal inversion" do
@@ -200,15 +201,154 @@ defmodule MatrixTest do
     assert_raise RuntimeError, fn -> Matrix.inverse(matrix) end
   end
 
-  def assert_close_to(matrix1, matrix2) do
-    Enum.each(0..3, fn y ->
-      Enum.each(0..3, fn x ->
-        assert_in_delta(
-          Matrix.at(matrix1, x, y),
-          Matrix.at(matrix2, x, y),
-          0.0001
-        )
-      end)
-    end)
+  test "translation" do
+    translation = Matrix.translate(5, -3, 2)
+    point       = Point.new(-3, 4, 5)
+    translated  = Matrix.multiply(translation, point)
+    expected    = Point.new(2, 1, 7)
+    assert translated == expected
+
+    inverse    = Matrix.inverse(translation)
+    translated = Matrix.multiply(inverse, point)
+    expected   = Point.new(-8, 7, 3)
+    assert translated == expected
+
+    vector     = Vector.new(-3, 4, 5)
+    translated = Matrix.multiply(translation, vector)
+    assert translated == vector
+  end
+
+  test "scaling" do
+    scale    = Matrix.scale(2, 3, 4)
+    point    = Point.new(-4, 6, 8)
+    scaled   = Matrix.multiply(scale, point)
+    expected = Point.new(-8, 18, 32)
+    assert scaled == expected
+
+    vector   = Vector.new(-4, 6, 8)
+    scaled   = Matrix.multiply(scale, vector)
+    expected = Vector.new(-8, 18, 32)
+    assert scaled == expected
+
+    inverse  = Matrix.inverse(scale)
+    scaled   = Matrix.multiply(inverse, vector)
+    expected = Vector.new(-2, 2, 2)
+    assert scaled == expected
+
+    scale    = Matrix.scale(-1, 1, 1)
+    point    = Point.new(2, 3, 4)
+    scaled   = Matrix.multiply(scale, point)
+    expected = Point.new(-2, 3, 4)
+    assert scaled == expected
+  end
+
+  test "rotation" do
+    rotation_45 = Matrix.rotate_x(45)
+    point       = Point.new(0, 1, 1)
+    rotated     = Matrix.multiply(rotation_45, point)
+    expected    = Point.new(0, 0, :math.sqrt(2))
+    assert_close_to_tuple rotated, expected
+
+    rotation_90 = Matrix.rotate_x(90)
+    rotated     = Matrix.multiply(rotation_90, point)
+    expected    = Point.new(0, -1, 1)
+    assert_close_to_tuple rotated, expected
+
+    vector   = Vector.new(0, 1, 1)
+    rotated  = Matrix.multiply(rotation_45, vector)
+    expected = Vector.new(0, 0, :math.sqrt(2))
+    assert_close_to_tuple rotated, expected
+
+    rotated  = Matrix.multiply(rotation_90, vector)
+    expected = Vector.new(0, -1, 1)
+    assert_close_to_tuple rotated, expected
+
+    inverse  = Matrix.inverse(rotation_45)
+    rotated  = Matrix.multiply(inverse, vector)
+    expected = Vector.new(0, :math.sqrt(2), 0)
+    assert_close_to_tuple rotated, expected
+
+    rotation_45 = Matrix.rotate_y(45)
+    point       = Point.new(1, 0, 1)
+    rotated     = Matrix.multiply(rotation_45, point)
+    expected    = Point.new(:math.sqrt(2), 0, 0)
+    assert_close_to_tuple rotated, expected
+
+    rotation_90 = Matrix.rotate_y(90)
+    rotated     = Matrix.multiply(rotation_90, point)
+    expected    = Point.new(1, 0, -1)
+    assert_close_to_tuple rotated, expected
+
+    vector   = Vector.new(1, 0, 1)
+    rotated  = Matrix.multiply(rotation_45, vector)
+    expected = Vector.new(:math.sqrt(2), 0, 0)
+    assert_close_to_tuple rotated, expected
+
+    rotated  = Matrix.multiply(rotation_90, vector)
+    expected = Vector.new(1, 0, -1)
+    assert_close_to_tuple rotated, expected
+
+    inverse  = Matrix.inverse(rotation_45)
+    rotated  = Matrix.multiply(inverse, vector)
+    expected = Vector.new(0, 0, :math.sqrt(2))
+    assert_close_to_tuple rotated, expected
+
+    rotation_45 = Matrix.rotate_z(45)
+    point       = Point.new(1, 1, 0)
+    rotated     = Matrix.multiply(rotation_45, point)
+    expected    = Point.new(0, :math.sqrt(2), 0)
+    assert_close_to_tuple rotated, expected
+
+    rotation_90 = Matrix.rotate_z(90)
+    rotated     = Matrix.multiply(rotation_90, point)
+    expected    = Point.new(-1, 1, 0)
+    assert_close_to_tuple rotated, expected
+
+    vector   = Vector.new(1, 1, 0)
+    rotated  = Matrix.multiply(rotation_45, vector)
+    expected = Vector.new(0, :math.sqrt(2), 0)
+    assert_close_to_tuple rotated, expected
+
+    rotated  = Matrix.multiply(rotation_90, vector)
+    expected = Vector.new(-1, 1, 0)
+    assert_close_to_tuple rotated, expected
+
+    inverse  = Matrix.inverse(rotation_45)
+    rotated  = Matrix.multiply(inverse, vector)
+    expected = Vector.new(:math.sqrt(2), 0, 0)
+    assert_close_to_tuple rotated, expected
+  end
+
+  test "shearing" do
+    shearing = Matrix.shear(1, 0, 0, 0, 0, 0)
+    point    = Point.new(2, 3, 4)
+    sheared  = Matrix.multiply(shearing, point)
+    expected = Point.new(5, 3, 4)
+    assert_close_to_tuple sheared, expected
+
+    shearing = Matrix.shear(0, 1, 0, 0, 0, 0)
+    sheared  = Matrix.multiply(shearing, point)
+    expected = Point.new(6, 3, 4)
+    assert_close_to_tuple sheared, expected
+
+    shearing = Matrix.shear(0, 0, 1, 0, 0, 0)
+    sheared  = Matrix.multiply(shearing, point)
+    expected = Point.new(2, 5, 4)
+    assert_close_to_tuple sheared, expected
+
+    shearing = Matrix.shear(0, 0, 0, 1, 0, 0)
+    sheared  = Matrix.multiply(shearing, point)
+    expected = Point.new(2, 7, 4)
+    assert_close_to_tuple sheared, expected
+
+    shearing = Matrix.shear(0, 0, 0, 0, 1, 0)
+    sheared  = Matrix.multiply(shearing, point)
+    expected = Point.new(2, 3, 6)
+    assert_close_to_tuple sheared, expected
+
+    shearing = Matrix.shear(0, 0, 0, 0, 0, 1)
+    sheared  = Matrix.multiply(shearing, point)
+    expected = Point.new(2, 3, 7)
+    assert_close_to_tuple sheared, expected
   end
 end

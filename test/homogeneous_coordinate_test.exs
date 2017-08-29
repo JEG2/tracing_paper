@@ -1,5 +1,6 @@
 defmodule HomogeneousCoordinateTest do
   use ExUnit.Case, async: true
+  import TracingPaper.Assertions
 
   alias TracingPaper.{Point, Vector}
   alias TracingPaper.HomogeneousCoordinate, as: Coord
@@ -30,18 +31,18 @@ defmodule HomogeneousCoordinateTest do
     t        = {1, -2, 3, -4}
     product  = Coord.multiply(t, 3.5)
     expected = {3.5, -7, 10.5, -14}
-    assert_close_to(product, expected)
+    assert_close_to_tuple(product, expected)
 
     product  = Coord.multiply(t, 0.5)
     expected = {0.5, -1, 1.5, -2}
-    assert_close_to(product, expected)
+    assert_close_to_tuple(product, expected)
   end
 
   test "scalar division" do
     t        = {1, -2, 3, -4}
     result   = Coord.divide(t, 2)
     expected = {0.5, -1, 1.5, -2}
-    assert_close_to(result, expected)
+    assert_close_to_tuple(result, expected)
   end
 
   test "magnitudes" do
@@ -96,12 +97,5 @@ defmodule HomogeneousCoordinateTest do
     product  = Coord.cross(vector1, vector2)
     expected = Vector.new(-1, 2, -1)
     assert product == expected
-  end
-
-  def assert_close_to({x1, y1, z1, w1}, {x2, y2, z2, w2}) do
-    assert_in_delta x1, x2, 0.0001
-    assert_in_delta y1, y2, 0.0001
-    assert_in_delta z1, z2, 0.0001
-    assert_in_delta w1, w2, 0.0001
   end
 end
