@@ -36,7 +36,7 @@ defmodule TracingPaper.HomogeneousCoordinate do
     {x / magnitude, y / magnitude, z / magnitude, 0}
   end
 
-  def dot({x1, y1, z1, 0}, {x2, y2, z2, 0}) do
+  def dot({x1, y1, z1, _w1}, {x2, y2, z2, _w2}) do
     x1 * x2 + y1 * y2 + z1 * z2
   end
 
