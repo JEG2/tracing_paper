@@ -17,6 +17,12 @@ defmodule TracingPaper.Assertions do
       end)
     end)
   end
+
+  def assert_close_to_color({r1, g1, b1}, {r2, g2, b2}) do
+    ExUnit.Assertions.assert_in_delta r1, r2, 0.0001
+    ExUnit.Assertions.assert_in_delta g1, g2, 0.0001
+    ExUnit.Assertions.assert_in_delta b1, b2, 0.0001
+  end
 end
 
 ExUnit.start()
