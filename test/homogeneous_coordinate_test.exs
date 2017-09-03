@@ -98,4 +98,20 @@ defmodule HomogeneousCoordinateTest do
     expected = Vector.new(-1, 2, -1)
     assert product == expected
   end
+
+  test "a vector approaching at 45 degrees reflects at 45 degrees" do
+    vector    = Vector.new(1, -1, 0)
+    normal    = Vector.new(0, 1, 0)
+    reflected = Coord.reflect(vector, normal)
+    expected  = Vector.new(1, 1, 0)
+    assert reflected == expected
+  end
+
+  test "a vector approaching a slanted surface reflects horizontally" do
+    vector    = Vector.new(0, -1, 0)
+    normal    = Coord.normalize(Vector.new(1, 1, 0))
+    reflected = Coord.reflect(vector, normal)
+    expected  = Vector.new(1, 0, 0)
+    assert_close_to_tuple reflected, expected
+  end
 end

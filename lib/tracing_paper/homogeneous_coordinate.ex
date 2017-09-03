@@ -27,11 +27,11 @@ defmodule TracingPaper.HomogeneousCoordinate do
     {x / n, y / n, z / n, w / n}
   end
 
-  def magnitude({x, y, z, 0}) do
+  def magnitude({x, y, z, w}) when w == 0 do
     :math.sqrt(:math.pow(x, 2) + :math.pow(y, 2) + :math.pow(z, 2))
   end
 
-  def normalize({x, y, z, 0} = vector) do
+  def normalize({x, y, z, w} = vector) when w == 0 do
     magnitude = magnitude(vector)
     {x / magnitude, y / magnitude, z / magnitude, 0}
   end
@@ -42,5 +42,9 @@ defmodule TracingPaper.HomogeneousCoordinate do
 
   def cross({x1, y1, z1, 0}, {x2, y2, z2, 0}) do
     {y1 * z2 - z1 * y2, z1 * x2 - x1 * z2, x1 * y2 - y1 * x2, 0}
+  end
+
+  def reflect(vector, normal) do
+    subtract(vector, multiply(multiply(normal, dot(vector, normal)), 2))
   end
 end
